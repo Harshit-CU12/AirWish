@@ -1,0 +1,6 @@
+{
+  "name": "Atmospheric Sentinel",
+  "description": "Urban household air quality protection console with statutory CPCB AQI telemetry, multi-room HEPA filtration controls, 24-hour smog forecasts, and family vulnerability triage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

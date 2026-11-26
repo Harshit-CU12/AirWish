@@ -1,0 +1,251 @@
+---
+name: Atmospheric Sentinel
+colors:
+  surface: '#051424'
+  surface-dim: '#051424'
+  surface-bright: '#2c3a4c'
+  surface-container-lowest: '#010f1f'
+  surface-container-low: '#0d1c2d'
+  surface-container: '#122131'
+  surface-container-high: '#1c2b3c'
+  surface-container-highest: '#273647'
+  on-surface: '#d4e4fa'
+  on-surface-variant: '#bcc9cd'
+  inverse-surface: '#d4e4fa'
+  inverse-on-surface: '#233143'
+  outline: '#869397'
+  outline-variant: '#3d494c'
+  surface-tint: '#4cd7f6'
+  primary: '#4cd7f6'
+  on-primary: '#003640'
+  primary-container: '#06b6d4'
+  on-primary-container: '#00424f'
+  inverse-primary: '#00687a'
+  secondary: '#7bd0ff'
+  on-secondary: '#00354a'
+  secondary-container: '#00a6e0'
+  on-secondary-container: '#00374d'
+  tertiary: '#4edea3'
+  on-tertiary: '#003824'
+  tertiary-container: '#1bbd85'
+  on-tertiary-container: '#00452e'
+  error: '#ffb4ab'
+  on-error: '#690005'
+  error-container: '#93000a'
+  on-error-container: '#ffdad6'
+  primary-fixed: '#acedff'
+  primary-fixed-dim: '#4cd7f6'
+  on-primary-fixed: '#001f26'
+  on-primary-fixed-variant: '#004e5c'
+  secondary-fixed: '#c4e7ff'
+  secondary-fixed-dim: '#7bd0ff'
+  on-secondary-fixed: '#001e2c'
+  on-secondary-fixed-variant: '#004c69'
+  tertiary-fixed: '#6ffbbe'
+  tertiary-fixed-dim: '#4edea3'
+  on-tertiary-fixed: '#002113'
+  on-tertiary-fixed-variant: '#005236'
+  background: '#051424'
+  on-background: '#d4e4fa'
+  surface-variant: '#273647'
+typography:
+  display-hero:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 56px
+    fontWeight: '800'
+    lineHeight: 64px
+    letterSpacing: -0.03em
+  display-hero-mobile:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 40px
+    fontWeight: '800'
+    lineHeight: 48px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 32px
+    fontWeight: '700'
+    lineHeight: 40px
+    letterSpacing: -0.02em
+  headline-lg-mobile:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 26px
+    fontWeight: '700'
+    lineHeight: 34px
+    letterSpacing: -0.015em
+  headline-md:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 22px
+    fontWeight: '600'
+    lineHeight: 30px
+    letterSpacing: -0.01em
+  headline-sm:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 18px
+    fontWeight: '600'
+    lineHeight: 26px
+  body-lg:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 26px
+  body-md:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 22px
+  body-sm:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '400'
+    lineHeight: 18px
+  label-lg:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '600'
+    lineHeight: 20px
+    letterSpacing: 0.01em
+  label-md:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: 16px
+    letterSpacing: 0.02em
+  label-sm:
+    fontFamily: Inter
+    fontSize: 11px
+    fontWeight: '700'
+    lineHeight: 14px
+    letterSpacing: 0.04em
+  numeric-metric:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 48px
+    fontWeight: '800'
+    lineHeight: 52px
+    letterSpacing: -0.02em
+rounded:
+  sm: 0.25rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
+  full: 9999px
+spacing:
+  gutter: 1rem
+  gutter-desktop: 1.5rem
+  margin: 1rem
+  margin-tablet: 1.5rem
+  margin-desktop: 2.5rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 2rem
+  space-2xl: 3rem
+---
+
+## Brand & Style
+
+This design system delivers an urgent, protective, yet reassuring interface engineered for urban households navigating hazardous seasonal smog and severe air quality crises. The aesthetic fuses atmospheric dark-mode immersion with clinical precision: high-contrast legibility, tactical clarity, and calm guidance under distressing environmental conditions.
+
+The visual style blends **Atmospheric Dark Glassmorphism** with **Technical Precision**:
+- **Atmospheric & Protective:** Deep nocturnal slate surfaces evoke indoor sanctuary and clean-air filtration, framing outside pollution hazards with uncompromising contrast.
+- **Urgent Clarity:** Standardized CPCB (Central Pollution Control Board) air quality indicators serve as high-signal visual alerts without causing panic, balanced by optimistic cyan/teal clean-air accents.
+- **Controlled Tactility:** Translucent card surfaces with razor-thin structural borders and soft atmospheric glow effects reinforce air flow, purification stages, and micro-climate awareness.
+
+## Colors
+
+The palette establishes an uncompromising atmospheric hierarchy built on an ink-slate backdrop, accented by the statutory CPCB National Air Quality Index scale and a forward-looking cyan/teal clean-air spectrum.
+
+### Base Canvases & Surfaces
+- **Canvas Base:** `#090D16` (Deep atmospheric nocturnal ground)
+- **Card Surface:** `#131B2E` (Semi-translucent container layer)
+- **Elevated Surface / Popover:** `#1E293B` (Floating dialogs, bottom sheets, sticky selectors)
+- **Structural Border:** `#2A364F` (Subtle boundary stroke across containers)
+- **High-Contrast Text Primary:** `#F8FAFC`
+- **Muted Text Secondary:** `#94A3B8`
+- **Subdued Text Tertiary:** `#64748B`
+
+### Brand & Vision Accents
+- **Primary Brand (Clean Air / Active):** `#06B6D4` (Teal-Cyan)
+- **Secondary Brand (Vapor / Breeze):** `#38BDF8` (Sky Teal)
+
+### Statutory CPCB AQI Semantic Spectrum
+- **Good (0–50):** `#10B981` (Emerald)
+- **Satisfactory (51–100):** `#84CC16` (Lime)
+- **Moderate (101–200):** `#F59E0B` (Amber)
+- **Poor (201–300):** `#F97316` (Orange)
+- **Very Poor (301–400):** `#EF4444` (Red)
+- **Severe (401–500+):** `#991B1B` (Deep Maroon/Crimson) with `#7F1D1D` containment backdrops.
+
+## Typography
+
+The type system pairs the geometric clarity and humanist balance of **Plus Jakarta Sans** for numerical metric readouts and atmospheric headlines with the rigorous utilitarian legibility of **Inter** for guidance instructions, body text, and micro-labels.
+
+### Hierarchy & Usage
+- **Numeric Metric & Display Hero:** Used exclusively for instantaneous AQI readings, indoor PM2.5 levels, and urgent weather advisories. Designed to remain crisp and unyielding at high visual densities.
+- **Headlines (Plus Jakarta Sans):** Provide warm, modern structural anchors for cards, advisory sections, and multi-room air monitor switchers.
+- **Body & Labels (Inter):** High x-height ensures immediate comprehension of medical warnings (masks, air purifiers, outdoor exercise thresholds) on low-brightness mobile screens at dawn or during dense smog cover.
+
+## Layout & Spacing
+
+The layout model is governed by a responsive fluid grid system designed for immediate, glanceable triage on mobile devices while expanding into a modular dashboard on tablets and desktops.
+
+### Grid & Breakpoints
+- **Mobile (360px – 767px):** 4-column fluid layout with `margin: 1rem` (16px) and `gutter: 1rem` (16px). AQI metrics and family health alerts stack vertically in primary view.
+- **Tablet (768px – 1023px):** 8-column fluid layout with `margin: 1.5rem` (24px) and `gutter: 1rem` (16px). Dual-column comparison: Outdoor Neighborhood AQI paired with Indoor Air Purifier telemetry.
+- **Desktop (1024px+):** 12-column layout capped at max-width 1280px with `margin: 2.5rem` (40px) and `gutter: 1.5rem` (24px). Spans multi-zone floor monitoring, 24-hour predictive forecast arcs, and vulnerability filters.
+
+### Component Spacing Rhythm
+- **Micro-Gaps (`space-xs`, `space-sm`):** Sensor pill chips, status indicator dots, badge padding, metric sub-labels.
+- **Container Insets (`space-md`, `space-lg`):** Internal padding for air quality cards, danger alerts, and device control widgets.
+- **Section Separators (`space-xl`, `space-2xl`):** Gap between real-time telemetry panels, advisory action blocks, and historical trend charts.
+
+## Elevation & Depth
+
+Visual hierarchy does not rely on heavy drop shadows, which muddy dark interfaces. Instead, the design system utilizes **Translucent Tonal Layering, Glassmorphism, and Atmospheric Radial Glows**.
+
+### Depth Layers
+- **Ground (Canvas):** Base background `#090D16` absorbs ambient contrast, serving as a dark thermal void.
+- **Surface Level 1 (Glassmorphic Cards):** `#131B2E` at 85% opacity with `backdrop-filter: blur(12px)`. Outlined with a razor-thin 1px border of `#2A364F` (increased to 20% opacity white `#FFFFFF1A` at top border edge to emulate directional rim lighting).
+- **Surface Level 2 (Elevated Popovers & Action Sheets):** Solid `#1E293B` with border `#334155`. Soft ambient shadow: `0 12px 32px -4px rgba(0, 0, 0, 0.6)`.
+- **Status Luminescence (Atmospheric Glow):** In place of elevation drops, extreme threat statuses cast a diffused color radial haze:
+  - Severe AQI generates a soft underglow: `box-shadow: 0 0 40px -10px rgba(153, 27, 27, 0.35)`.
+  - Clean/Safe zones emit a soothing cyan-emerald halo: `box-shadow: 0 0 32px -8px rgba(6, 182, 212, 0.25)`.
+
+## Shapes
+
+The design system employs **Rounded geometry (`roundedness: 2`)** with selected components deliberately transitioning into complete pill geometries (`rounded-full` / 9999px) to communicate biological safety, gentle airflow, and non-aggressive protection.
+
+### Geometry Guidelines
+- **Standard Cards & Modules:** 0.5rem (8px) on mobile scaling up to 1rem (16px) on desktop via `rounded-lg` tokens.
+- **Telemetry Indicators & Badges:** Full pill-shape (`9999px`) for AQI status tags (e.g., "Severe - 432", "Indoor Clean - 24"), status pills, and toggle switches.
+- **Action Buttons & Form Controls:** Smooth 0.5rem (8px) radius providing firm ergonomic thumb anchors.
+- **Progress Trackers & Gauges:** Pill-capped continuous bars with rounded edge terminals to depict continuous air streams.
+
+## Components
+
+### Buttons
+- **Primary Action (Purify / Safe Mode):** Background in `#06B6D4` with bold dark text (`#090D16`). Hover transitions to `#38BDF8` with a subtle `0 0 16px rgba(6, 182, 212, 0.4)` glow.
+- **Secondary (Explore / Details):** Translucent background `#1E293B`, border 1px solid `#2A364F`, text `#F8FAFC`.
+- **Emergency Alert Action:** `#991B1B` background, `#F8FAFC` text, targeted for critical smog alerts and window sealing triggers.
+
+### AQI Pill Chips
+- **Structure:** Pill-shaped (`rounded-full`), padded with `space-xs` vertically and `space-sm` horizontally.
+- **Status Mapping:** Background tint at 15% opacity of the respective CPCB color, coupled with a 1px solid border at 40% opacity, enclosing high-contrast bold white/status text and a 6px glowing indicator dot.
+
+### Cards & Atmospheric Gauges
+- **Glassmorphic Data Cards:** Built upon `#131B2E` with `backdrop-filter: blur(12px)` and 1px `#2A364F` border.
+- **Dynamic AQI Hero Card:** Adapts its top rim border color to the current ambient air condition (e.g., `#EF4444` when outdoor air hits "Very Poor"), casting an inner gradient wash from top to bottom.
+
+### Inputs & Search Fields
+- **Container:** `#0E1524` with 1px border in `#2A364F`, switching to `#06B6D4` on focus with a 2px outer cyan ring (`rgba(6, 182, 212, 0.2)`).
+- **Text:** Input text in `#F8FAFC`, placeholder text in `#64748B`.
+
+### Lists & Family Member Risk Rows
+- **List Items:** Alternating soft surface highlights on hover (`#1E293B` at 50% opacity). Divided by 1px subtle rules of `#1A2438`.
+- **Vulnerability Tags:** High-contrast sub-pills identifying sensitive groups (e.g., "Elderly", "Child with Asthma") with clear advisory text.
+
+### Checkboxes & Toggle Switches
+- **Toggles:** Pill-shaped track in `#1E293B` with border `#2A364F`. Active state fills with `#06B6D4`, shifting the thumb in pure `#FFFFFF`.
+- **Checkboxes:** Squared 0.25rem (4px) rounded corners, filled with `#06B6D4` upon selection.
