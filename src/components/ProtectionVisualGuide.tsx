@@ -31,10 +31,13 @@ export function ProtectionVisualGuide({
   const totalCadr = Math.round(
     rooms.reduce((sum, r) => sum + getEffectiveCadrM3h(r), 0)
   );
-  const lowestFilterRoom = rooms.reduce(
-    (min, r) => (r.hepaFilterLifePct < min.hepaFilterLifePct ? r : min),
-    rooms[0]
-  );
+  const lowestFilterRoom =
+    rooms.length > 0
+      ? rooms.reduce(
+          (min, r) => (r.hepaFilterLifePct < min.hepaFilterLifePct ? r : min),
+          rooms[0]
+        )
+      : null;
 
   return (
     <section

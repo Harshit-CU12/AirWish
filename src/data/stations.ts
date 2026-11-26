@@ -52,6 +52,7 @@ export const MONITORING_STATIONS: MonitoringStation[] = [
     city: 'New Delhi',
     region: 'East Delhi · CPCB Station #DL-AV04',
     stationCode: 'DL-AV04',
+    coordinates: { lat: 28.6469, lng: 77.3160 },
     updatedMinutesAgo: 2,
     pollutants: {
       pm25: 298,
@@ -77,6 +78,7 @@ export const MONITORING_STATIONS: MonitoringStation[] = [
     city: 'Gurugram',
     region: 'Delhi NCR · HSPCB Station #HR-GG51',
     stationCode: 'HR-GG51',
+    coordinates: { lat: 28.4312, lng: 77.0725 },
     updatedMinutesAgo: 4,
     pollutants: {
       pm25: 186,
@@ -102,6 +104,7 @@ export const MONITORING_STATIONS: MonitoringStation[] = [
     city: 'Kolkata',
     region: 'South Kolkata · WBPCB Station #WB-BG12',
     stationCode: 'WB-BG12',
+    coordinates: { lat: 22.5280, lng: 88.3656 },
     updatedMinutesAgo: 5,
     pollutants: {
       pm25: 108,
@@ -127,6 +130,7 @@ export const MONITORING_STATIONS: MonitoringStation[] = [
     city: 'Mumbai',
     region: 'Western Suburbs · MPCB Station #MH-BKC2',
     stationCode: 'MH-BKC2',
+    coordinates: { lat: 19.0662, lng: 72.8687 },
     updatedMinutesAgo: 3,
     pollutants: {
       pm25: 74,
@@ -152,6 +156,7 @@ export const MONITORING_STATIONS: MonitoringStation[] = [
     city: 'Bengaluru',
     region: 'East Bengaluru · KSPCB Station #KA-IN08',
     stationCode: 'KA-IN08',
+    coordinates: { lat: 12.9784, lng: 77.6408 },
     updatedMinutesAgo: 1,
     pollutants: {
       pm25: 44,

@@ -14,9 +14,9 @@ export function SentinelImage({
   className = '',
   fallbackTitle,
 }: SentinelImageProps) {
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  if (failed) {
+  if (failedSrc === src) {
     return (
       <div
         role="img"
@@ -38,7 +38,7 @@ export function SentinelImage({
       src={src}
       alt={alt}
       referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
       className={className}
     />
   );

@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import {
   AlertCircle,
   Lock,
   LockOpen,
+  Plus,
   RotateCcw,
+  Trash2,
   Wind,
+  X,
 } from 'lucide-react';
 import type { PurifierMode, RoomMonitor } from '../types/sentinel';
 import { getCpcbCategory } from '../utils/aqi';
@@ -26,6 +30,8 @@ interface RoomMonitorPanelProps {
   onSetPurifierMode: (roomId: string, mode: PurifierMode) => void;
   onResetFilter: (roomId: string) => void;
   onBulkAction?: (action: 'seal_all' | 'all_turbo' | 'all_auto' | 'night_sleep') => void;
+  onAddRoom?: (room: Omit<RoomMonitor, 'id'>) => void;
+  onRemoveRoom?: (roomId: string) => void;
 }
 
 export function RoomMonitorPanel({
@@ -37,7 +43,57 @@ export function RoomMonitorPanel({
   onSetPurifierMode,
   onResetFilter,
   onBulkAction,
+  onAddRoom,
+  onRemoveRoom,
 }: RoomMonitorPanelProps) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [roomName, setRoomName] = useState('');
+  const [floor, setFloor] = useState('Main Level');
+  const [areaSqM, setAreaSqM] = useState('22');
+  const [cadr, setCadr] = useState('420');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function handleCreateRoom(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = roomName.trim();
+    const area = Number(areaSqM);
+    const cadrNum = Number(cadr);
+
+    if (!trimmed) {
+      setFormError('Please enter a room or zone name.');
+      return;
+    }
+    if (Number.isNaN(area) || area < 6 || area > 200) {
+      setFormError('Please enter a valid room area between 6 and 200 m².');
+      return;
+    }
+    if (Number.isNaN(cadrNum) || cadrNum < 50 || cadrNum > 1500) {
+      setFormError('Please enter a valid CADR rating between 50 and 1500 m³/h.');
+      return;
+    }
+
+    if (onAddRoom) {
+      onAddRoom({
+        name: trimmed,
+        floor,
+        areaSqM: Math.round(area),
+        ceilingHeightM: 2.9,
+        maxCadrM3h: Math.round(cadrNum),
+        indoorPm25: 35,
+        co2Ppm: 600,
+        tempC: 22,
+        humidityPct: 50,
+        purifierMode: 'auto',
+        windowsSealed: true,
+        hepaFilterLifePct: 100,
+        assignedOccupants: [],
+      });
+    }
+
+    setRoomName('');
+    setShowAddForm(false);
+    setFormError(null);
+  }
   const sealedCount = rooms.filter((r) => r.windowsSealed).length;
   const totalWatts = rooms.reduce(
     (sum, r) => sum + PURIFIER_MODE_SPECS[r.purifierMode].watts,
@@ -94,9 +150,121 @@ export function RoomMonitorPanel({
             >
               All Turbo HEPA
             </button>
+            {onAddRoom && (
+              <button
+                type="button"
+                onClick={() => setShowAddForm((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#06B6D4]/60 bg-[#06B6D4]/15 px-3 py-2 text-xs font-semibold text-[#38BDF8] hover:bg-[#06B6D4]/25 transition-colors whitespace-nowrap min-h-[38px]"
+              >
+                {showAddForm ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                <span>{showAddForm ? 'Cancel' : 'Add Zone'}</span>
+              </button>
+            )}
           </div>
         )}
       </div>
+
+      {showAddForm && onAddRoom && (
+        <form
+          onSubmit={handleCreateRoom}
+          className="rounded-xl border border-[#2A364F] bg-[#0E1524] p-4.5 space-y-3.5"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-[#F8FAFC]">Add New Monitored Air Zone</span>
+            <span className="text-xs text-[#94A3B8]">Configures volume, ACH &amp; filtration model</span>
+          </div>
+
+          {formError && (
+            <div className="rounded-lg border border-[#EF4444]/40 bg-[#7F1D1D]/30 px-3 py-2 text-xs text-[#FECACA]">
+              {formError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="sm:col-span-2">
+              <label htmlFor="zone-name" className="block text-xs font-medium text-[#94A3B8] mb-1">
+                Room Name
+              </label>
+              <input
+                id="zone-name"
+                type="text"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                placeholder="e.g., Home Office / Attic Nursery"
+                className="sentinel-input w-full rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="zone-floor" className="block text-xs font-medium text-[#94A3B8] mb-1">
+                Floor Level
+              </label>
+              <select
+                id="zone-floor"
+                value={floor}
+                onChange={(e) => setFloor(e.target.value)}
+                className="sentinel-input w-full rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="Main Level" className="bg-[#0E1524]">Main Level</option>
+                <option value="Upper Level" className="bg-[#0E1524]">Upper Level</option>
+                <option value="Basement" className="bg-[#0E1524]">Basement</option>
+                <option value="Attic / Loft" className="bg-[#0E1524]">Attic / Loft</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="zone-area" className="block text-xs font-medium text-[#94A3B8] mb-1">
+                Area (m²) &amp; CADR (m³/h)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="zone-area"
+                  type="number"
+                  min={6}
+                  max={200}
+                  value={areaSqM}
+                  onChange={(e) => setAreaSqM(e.target.value)}
+                  placeholder="Area m²"
+                  title="Room floor area in square meters"
+                  aria-label="Floor area in square meters"
+                  className="sentinel-input w-1/2 rounded-lg px-2.5 py-2 text-sm"
+                />
+                <input
+                  id="zone-cadr"
+                  type="number"
+                  min={50}
+                  max={1500}
+                  value={cadr}
+                  onChange={(e) => setCadr(e.target.value)}
+                  placeholder="CADR"
+                  title="Purifier CADR in m³/h"
+                  aria-label="Purifier clean air delivery rate in m³/h"
+                  className="sentinel-input w-1/2 rounded-lg px-2.5 py-2 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddForm(false);
+                setFormError(null);
+              }}
+              className="rounded-lg border border-[#2A364F] bg-[#1E293B] px-3 py-1.5 text-xs font-semibold text-[#F8FAFC]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-[#06B6D4] px-4 py-1.5 text-xs font-semibold text-[#090D16] hover:bg-[#38BDF8]"
+            >
+              Save Zone
+            </button>
+          </div>
+        </form>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {rooms.map((room) => {
@@ -131,7 +299,20 @@ export function RoomMonitorPanel({
                     {room.name}
                   </h3>
                 </div>
-                <AqiPill aqi={roomAqi} size="sm" />
+                <div className="flex items-center gap-2">
+                  <AqiPill aqi={roomAqi} size="sm" />
+                  {onRemoveRoom && room.id.startsWith('room-custom-') && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveRoom(room.id)}
+                      title={`Remove custom zone ${room.name}`}
+                      aria-label={`Remove custom zone ${room.name}`}
+                      className="rounded-md p-1 text-[#64748B] hover:bg-[#1E293B] hover:text-[#FCA5A5] transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Metrics Row */}
@@ -219,7 +400,7 @@ export function RoomMonitorPanel({
                   >
                     <span
                       className={`inline-block h-4 w-4 rounded-full bg-[#FFFFFF] transition-transform ${
-                        room.windowsSealed ? 'translate-x-5.5' : 'translate-x-1'
+                        room.windowsSealed ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>

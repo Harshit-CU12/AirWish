@@ -284,6 +284,12 @@ export function HeroTelemetry({
 
         {/* Bottom Clean Unboxed Atmospheric Strip */}
         <div className="relative mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#1A2438] pt-4 text-xs text-[#94A3B8] tabular-nums">
+          {station.weather.isLive && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/35 px-2.5 py-0.5 text-[11px] font-semibold text-[#6EE7B7]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" aria-hidden="true" />
+              <span>Live Open-Meteo ({station.weather.lastFetchedAt})</span>
+            </span>
+          )}
           <span>
             Temp <strong className="text-[#F8FAFC]">{station.weather.tempC}°C</strong>
           </span>
@@ -437,7 +443,7 @@ export function HeroTelemetry({
               >
                 <span
                   className={`inline-block h-4 w-4 rounded-full bg-[#FFFFFF] transition-transform ${
-                    activeRoom.windowsSealed ? 'translate-x-5.5' : 'translate-x-1'
+                    activeRoom.windowsSealed ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>

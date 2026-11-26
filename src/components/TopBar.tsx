@@ -1,4 +1,4 @@
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
+import { FileDown, ShieldAlert, ShieldCheck, Sparkles } from 'lucide-react';
 import type { ViewTab } from '../types/sentinel';
 
 interface TopBarProps {
@@ -6,6 +6,8 @@ interface TopBarProps {
   onSelectTab: (tab: ViewTab) => void;
   safeModeActive: boolean;
   onToggleSafeMode: () => void;
+  onOpenAiAdvisor: () => void;
+  onExportReport: () => void;
 }
 
 const NAV_ITEMS: { id: ViewTab; label: string }[] = [
@@ -21,6 +23,8 @@ export function TopBar({
   onSelectTab,
   safeModeActive,
   onToggleSafeMode,
+  onOpenAiAdvisor,
+  onExportReport,
 }: TopBarProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#2A364F] bg-[#090D16]/90 backdrop-blur-md">
@@ -57,7 +61,7 @@ export function TopBar({
                 strokeLinecap="round"
               />
             </svg>
-            <span>Atmospheric Sentinel</span>
+            <span>AirWish</span>
           </button>
 
           {/* Zone 2: Clean single-line text navigation links */}
@@ -91,8 +95,30 @@ export function TopBar({
             })}
           </nav>
 
-          {/* Zone 3: Single primary action button */}
-          <div className="flex items-center shrink-0">
+          {/* Zone 3: Primary Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onExportReport}
+              title="Export Clinical Exposure Report (CSV / Print)"
+              aria-label="Export Clinical Exposure Report"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#2A364F] bg-[#1E293B] px-2.5 sm:px-3 py-2 text-xs font-semibold text-[#F8FAFC] hover:border-[#38BDF8]/60 transition-colors whitespace-nowrap min-h-[40px]"
+            >
+              <FileDown className="h-4 w-4 text-[#38BDF8]" aria-hidden="true" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenAiAdvisor}
+              title="Open AirWish AI Smog Doctor (Gemini)"
+              aria-label="Open AI Smog Advisor"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#06B6D4]/40 bg-[#06B6D4]/12 px-2.5 sm:px-3.5 py-2 text-xs font-semibold text-[#38BDF8] hover:bg-[#06B6D4]/22 hover:border-[#06B6D4] transition-all whitespace-nowrap min-h-[40px]"
+            >
+              <Sparkles className="h-4 w-4 text-[#06B6D4]" aria-hidden="true" />
+              <span className="hidden sm:inline">AI Advisor</span>
+            </button>
+
             <button
               type="button"
               onClick={onToggleSafeMode}

@@ -17,6 +17,14 @@ test('CPCB PM2.5 breakpoints match statutory scale boundaries', () => {
   assert.equal(calculatePollutantSubIndex('pm25', 380), 500);
 });
 
+test('calculatePollutantSubIndex handles invalid and edge-case inputs gracefully', () => {
+  assert.equal(calculatePollutantSubIndex('pm25', NaN), 0);
+  assert.equal(calculatePollutantSubIndex('pm25', -50), 0);
+  assert.equal(calculatePollutantSubIndex('pm25', Infinity), 0);
+  assert.equal(calculatePollutantSubIndex('pm25', 500), 591);
+  assert.equal(calculatePollutantSubIndex('pm25', 1000), 600);
+});
+
 test('CPCB category mapping returns exact semantic tiers', () => {
   assert.equal(getCpcbCategory(35).key, 'good');
   assert.equal(getCpcbCategory(88).key, 'satisfactory');

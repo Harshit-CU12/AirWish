@@ -1,13 +1,38 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FamilyCarePanel } from './components/FamilyCarePanel';
 import { ForecastChart } from './components/ForecastChart';
 import { HeroTelemetry } from './components/HeroTelemetry';
 import { PollutantGrid } from './components/PollutantGrid';
 import { ProtectionVisualGuide } from './components/ProtectionVisualGuide';
 import { RoomMonitorPanel } from './components/RoomMonitorPanel';
-import { Sanctuary3DVisualizer } from './components/Sanctuary3DVisualizer';
 import { StationToolbar } from './components/StationToolbar';
 import { TopBar } from './components/TopBar';
+
+const Sanctuary3DVisualizer = lazy(() =>
+  import('./components/Sanctuary3DVisualizer').then((m) => ({
+    default: m.Sanctuary3DVisualizer,
+  }))
+);
+
+function VisualizerSkeleton({ expanded = false }: { expanded?: boolean }) {
+  return (
+    <div
+      className="sentinel-card relative overflow-hidden rounded-2xl border border-[#2A364F] bg-[#070C16] flex flex-col items-center justify-center p-6 text-center animate-pulse"
+      style={{
+        height: expanded ? 'min(74vh, 680px)' : '430px',
+        minHeight: expanded ? '520px' : '380px',
+      }}
+    >
+      <div className="h-9 w-9 rounded-full border-2 border-[#06B6D4] border-t-transparent animate-spin mb-3" />
+      <p className="font-display text-sm font-semibold text-[#F8FAFC]">
+        Initializing 3D Airflow Model...
+      </p>
+      <p className="mt-1 text-xs text-[#94A3B8]">
+        Loading spatial physics &amp; HEPA turbine rig
+      </p>
+    </div>
+  );
+}
 import {
   DEFAULT_CHECKLIST,
   DEFAULT_FAMILY_MEMBERS,
@@ -23,6 +48,11 @@ import type {
 } from './types/sentinel';
 import { evaluateMemberGuidance, evaluateStationAqi } from './utils/aqi';
 import { getRoomIndoorAqi, stepRoomPm25 } from './utils/filtration';
+import { fetchLiveStationWeather } from './services/weather';
+import { exportExposureReportCsv } from './utils/exportReport';
+import { playAlertChime, requestBrowserNotification } from './utils/alertSound';
+import { AiAdvisorModal } from './components/AiAdvisorModal';
+import type { WeatherConditions } from './types/sentinel';
 
 const STORAGE_KEYS = {
   stationId: 'sentinel_v1_station_id',
@@ -35,7 +65,11 @@ function loadStored<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return fallback;
-    return JSON.parse(raw) as T;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(fallback) && (!Array.isArray(parsed) || parsed.length === 0)) {
+      return fallback;
+    }
+    return parsed as T;
   } catch {
     return fallback;
   }
@@ -59,6 +93,7 @@ export default function App() {
     loadStored<ChecklistItem[]>(STORAGE_KEYS.checklist, DEFAULT_CHECKLIST)
   );
   const [simulationRunning, setSimulationRunning] = useState(true);
+  const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
 
   const selectedStation = useMemo(
     () =>
@@ -67,9 +102,29 @@ export default function App() {
     [selectedStationId]
   );
 
+  const [liveWeatherMap, setLiveWeatherMap] = useState<Record<string, WeatherConditions>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveStationWeather(selectedStation).then((live) => {
+      if (!cancelled && live) {
+        setLiveWeatherMap((prev) => ({ ...prev, [selectedStation.id]: live }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedStation]);
+
+  const activeStation = useMemo(() => {
+    const live = liveWeatherMap[selectedStation.id];
+    if (!live) return selectedStation;
+    return { ...selectedStation, weather: live };
+  }, [selectedStation, liveWeatherMap]);
+
   const outdoorAssessment = useMemo(
-    () => evaluateStationAqi(selectedStation.pollutants),
-    [selectedStation]
+    () => evaluateStationAqi(activeStation.pollutants),
+    [activeStation]
   );
 
   const unsealedRoomCount = useMemo(
@@ -83,6 +138,24 @@ export default function App() {
       rooms.every((r) => r.windowsSealed && r.purifierMode === 'turbo'),
     [rooms]
   );
+
+  const prevAqiRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const prevAqi = prevAqiRef.current;
+    prevAqiRef.current = outdoorAssessment.aqi;
+
+    const enteredSevere =
+      outdoorAssessment.aqi >= 400 && (prevAqi === null || prevAqi < 400);
+
+    if (enteredSevere && !safeModeActive) {
+      playAlertChime('warning');
+      requestBrowserNotification(
+        'Severe Smog Emergency Alert (CPCB 400+)',
+        `AirWish detected AQI ${outdoorAssessment.aqi} at ${activeStation.name}. Seal windows & engage Turbo HEPA.`
+      );
+    }
+  }, [outdoorAssessment.aqi, safeModeActive, activeStation.name]);
 
   const sensitiveAlertCount = useMemo(() => {
     return members.filter((member) => {
@@ -135,7 +208,7 @@ export default function App() {
   // Real-time indoor air filtration physics tick
   const advanceFiltration = useCallback(
     (minutes: number) => {
-      const outdoorPm25 = selectedStation.pollutants.pm25;
+      const outdoorPm25 = activeStation.pollutants.pm25;
       setRooms((prev) =>
         prev.map((room) => {
           const nextPm25 = stepRoomPm25(room, outdoorPm25, minutes);
@@ -153,7 +226,7 @@ export default function App() {
         })
       );
     },
-    [selectedStation.pollutants.pm25]
+    [activeStation.pollutants.pm25]
   );
 
   useEffect(() => {
@@ -165,7 +238,7 @@ export default function App() {
   }, [simulationRunning, advanceFiltration]);
 
   const handleToggleSafeMode = useCallback(() => {
-    const outdoorPm25 = selectedStation.pollutants.pm25;
+    const outdoorPm25 = activeStation.pollutants.pm25;
     if (safeModeActive) {
       // Step down from Turbo Lockdown to balanced Auto while keeping windows sealed
       setRooms((prev) =>
@@ -176,6 +249,7 @@ export default function App() {
       );
     } else {
       // Full Sanctuary Lockdown: seal all windows, set all purifiers to Turbo, apply immediate 8m clearance step
+      playAlertChime('safe_mode');
       setRooms((prev) =>
         prev.map((room) => {
           const locked: RoomMonitor = {
@@ -190,7 +264,7 @@ export default function App() {
         })
       );
     }
-  }, [safeModeActive, selectedStation.pollutants.pm25]);
+  }, [safeModeActive, activeStation.pollutants.pm25]);
 
   const handleActivateSafeMode = useCallback(() => {
     if (!safeModeActive) {
@@ -226,6 +300,39 @@ export default function App() {
       )
     );
   }, []);
+
+  const handleAddRoom = useCallback((roomInput: Omit<RoomMonitor, 'id'>) => {
+    const newRoom: RoomMonitor = {
+      ...roomInput,
+      id: `room-custom-${Date.now()}`,
+    };
+    setRooms((prev) => [...prev, newRoom]);
+  }, []);
+
+  const handleRemoveRoom = useCallback((roomId: string) => {
+    setRooms((prev) => {
+      const remaining = prev.filter((r) => r.id !== roomId);
+      if (remaining.length > 0) {
+        setSelectedRoomId((current) => (current === roomId ? remaining[0].id : current));
+        setMembers((prevMembers) =>
+          prevMembers.map((m) =>
+            m.primaryRoomId === roomId ? { ...m, primaryRoomId: remaining[0].id } : m
+          )
+        );
+      }
+      return remaining;
+    });
+  }, []);
+
+  const handleExportReport = useCallback(() => {
+    exportExposureReportCsv(
+      activeStation,
+      outdoorAssessment,
+      rooms,
+      members,
+      checklist
+    );
+  }, [activeStation, outdoorAssessment, rooms, members, checklist]);
 
   const handleBulkRoomAction = useCallback(
     (action: 'seal_all' | 'all_turbo' | 'all_auto' | 'night_sleep') => {
@@ -274,12 +381,14 @@ export default function App() {
         onSelectTab={setActiveTab}
         safeModeActive={safeModeActive}
         onToggleSafeMode={handleToggleSafeMode}
+        onOpenAiAdvisor={() => setIsAiAdvisorOpen(true)}
+        onExportReport={handleExportReport}
       />
 
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8">
         <StationToolbar
           stations={MONITORING_STATIONS}
-          selectedStation={selectedStation}
+          selectedStation={activeStation}
           onSelectStation={setSelectedStationId}
           outdoorAqi={outdoorAssessment.aqi}
           unsealedRoomCount={unsealedRoomCount}
@@ -293,7 +402,7 @@ export default function App() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             <HeroTelemetry
-              station={selectedStation}
+              station={activeStation}
               assessment={outdoorAssessment}
               rooms={rooms}
               selectedRoomId={selectedRoomId}
@@ -303,25 +412,27 @@ export default function App() {
               onOpenRoomsView={() => setActiveTab('rooms')}
             />
 
-            <Sanctuary3DVisualizer
-              stationName={`${selectedStation.name}, ${selectedStation.city}`}
-              outdoorAqi={outdoorAssessment.aqi}
-              rooms={rooms}
-              selectedRoomId={selectedRoomId}
-              onSelectRoom={setSelectedRoomId}
-              safeModeActive={safeModeActive}
-              onToggleSafeMode={handleToggleSafeMode}
-              onExpandView={() => setActiveTab('spatial')}
-            />
+            <Suspense fallback={<VisualizerSkeleton />}>
+              <Sanctuary3DVisualizer
+                stationName={`${activeStation.name}, ${activeStation.city}`}
+                outdoorAqi={outdoorAssessment.aqi}
+                rooms={rooms}
+                selectedRoomId={selectedRoomId}
+                onSelectRoom={setSelectedRoomId}
+                safeModeActive={safeModeActive}
+                onToggleSafeMode={handleToggleSafeMode}
+                onExpandView={() => setActiveTab('spatial')}
+              />
+            </Suspense>
 
             <PollutantGrid
-              readings={selectedStation.pollutants}
+              readings={activeStation.pollutants}
               assessment={outdoorAssessment}
             />
 
             <ForecastChart
-              stationName={`${selectedStation.name}, ${selectedStation.city}`}
-              forecast={selectedStation.forecast24h}
+              stationName={`${activeStation.name}, ${activeStation.city}`}
+              forecast={activeStation.forecast24h}
               rooms={rooms}
               onOpenFullForecast={() => setActiveTab('forecast')}
             />
@@ -349,21 +460,23 @@ export default function App() {
 
         {activeTab === 'spatial' && (
           <div className="space-y-6">
-            <Sanctuary3DVisualizer
-              stationName={`${selectedStation.name}, ${selectedStation.city}`}
-              outdoorAqi={outdoorAssessment.aqi}
-              rooms={rooms}
-              selectedRoomId={selectedRoomId}
-              onSelectRoom={setSelectedRoomId}
-              safeModeActive={safeModeActive}
-              onToggleSafeMode={handleToggleSafeMode}
-              expanded
-            />
+            <Suspense fallback={<VisualizerSkeleton expanded />}>
+              <Sanctuary3DVisualizer
+                stationName={`${activeStation.name}, ${activeStation.city}`}
+                outdoorAqi={outdoorAssessment.aqi}
+                rooms={rooms}
+                selectedRoomId={selectedRoomId}
+                onSelectRoom={setSelectedRoomId}
+                safeModeActive={safeModeActive}
+                onToggleSafeMode={handleToggleSafeMode}
+                expanded
+              />
+            </Suspense>
 
             <RoomMonitorPanel
               rooms={rooms}
               outdoorAqi={outdoorAssessment.aqi}
-              outdoorPm25={selectedStation.pollutants.pm25}
+              outdoorPm25={activeStation.pollutants.pm25}
               onToggleWindow={handleToggleRoomWindow}
               onSetPurifierMode={handleSetRoomPurifierMode}
               onResetFilter={handleResetRoomFilter}
@@ -376,12 +489,14 @@ export default function App() {
             <RoomMonitorPanel
               rooms={rooms}
               outdoorAqi={outdoorAssessment.aqi}
-              outdoorPm25={selectedStation.pollutants.pm25}
+              outdoorPm25={activeStation.pollutants.pm25}
               detailed
               onToggleWindow={handleToggleRoomWindow}
               onSetPurifierMode={handleSetRoomPurifierMode}
               onResetFilter={handleResetRoomFilter}
               onBulkAction={handleBulkRoomAction}
+              onAddRoom={handleAddRoom}
+              onRemoveRoom={handleRemoveRoom}
             />
 
             <ProtectionVisualGuide
@@ -395,8 +510,8 @@ export default function App() {
 
         {activeTab === 'forecast' && (
           <ForecastChart
-            stationName={`${selectedStation.name}, ${selectedStation.city}`}
-            forecast={selectedStation.forecast24h}
+            stationName={`${activeStation.name}, ${activeStation.city}`}
+            forecast={activeStation.forecast24h}
             rooms={rooms}
             detailed
           />
@@ -419,13 +534,22 @@ export default function App() {
       <footer className="mt-8 border-t border-[#1A2438] bg-[#090D16]">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#64748B]">
           <span>
-            Atmospheric Sentinel · Calibrated to CPCB National Air Quality Index standards
+            AirWish · Calibrated to CPCB National Air Quality Index standards
           </span>
           <span>
             Indoor PM2.5 trajectories modeled from room volume, window seal, and HEPA CADR
           </span>
         </div>
       </footer>
+
+      <AiAdvisorModal
+        isOpen={isAiAdvisorOpen}
+        onClose={() => setIsAiAdvisorOpen(false)}
+        station={activeStation}
+        assessment={outdoorAssessment}
+        rooms={rooms}
+        members={members}
+      />
     </div>
   );
 }

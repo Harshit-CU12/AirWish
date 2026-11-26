@@ -73,6 +73,16 @@ export function StationToolbar({
               value={searchQuery}
               onFocus={() => setDropdownOpen(true)}
               onBlur={() => setTimeout(() => setDropdownOpen(false), 180)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && filteredStations.length > 0) {
+                  e.preventDefault();
+                  onSelectStation(filteredStations[0].id);
+                  setSearchQuery('');
+                  setDropdownOpen(false);
+                } else if (e.key === 'Escape') {
+                  setDropdownOpen(false);
+                }
+              }}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setDropdownOpen(true);

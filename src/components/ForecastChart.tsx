@@ -77,7 +77,7 @@ export function ForecastChart({
   );
 
   const peakCategory = getCpcbCategory(
-    Math.max(...forecast.map((f) => f.outdoorAqi))
+    Math.max(0, ...forecast.map((f) => f.outdoorAqi))
   );
 
   const yTicks = [0, 100, 200, 300, 400, 500].filter((t) => t <= maxY);

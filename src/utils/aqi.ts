@@ -129,8 +129,12 @@ export function calculatePollutantSubIndex(
   pollutant: PollutantKey,
   concentration: number
 ): number {
+  if (typeof concentration !== 'number' || Number.isNaN(concentration) || !Number.isFinite(concentration)) {
+    return 0;
+  }
   const c = Math.max(0, concentration);
   const bps = CPCB_BREAKPOINTS[pollutant];
+  if (!bps || bps.length === 0) return 0;
 
   for (const bp of bps) {
     if (c <= bp.cHigh) {
@@ -141,9 +145,10 @@ export function calculatePollutantSubIndex(
     }
   }
 
-  // Linearly extrapolate above 500 capped at 500 for standard CPCB display, or allow 500+
+  // Linearly extrapolate above 500 capped at 600 for standard CPCB display
   const last = bps[bps.length - 1];
-  const slope = (last.iHigh - last.iLow) / (last.cHigh - last.cLow);
+  const span = last.cHigh - last.cLow;
+  const slope = span > 0 ? (last.iHigh - last.iLow) / span : 1;
   return Math.min(600, Math.round(last.iHigh + slope * (c - last.cHigh)));
 }
 

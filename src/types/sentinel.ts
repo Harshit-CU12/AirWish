@@ -24,6 +24,8 @@ export interface WeatherConditions {
   windDirection: string;
   visibilityKm: number;
   inversionRisk: 'Low' | 'Moderate' | 'High' | 'Severe';
+  isLive?: boolean;
+  lastFetchedAt?: string;
 }
 
 export interface ForecastPoint {
@@ -44,6 +46,7 @@ export interface MonitoringStation {
   updatedMinutesAgo: number;
   pollutants: PollutantReadings;
   weather: WeatherConditions;
+  coordinates?: { lat: number; lng: number };
   forecast24h: ForecastPoint[];
 }
 

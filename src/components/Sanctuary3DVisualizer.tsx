@@ -259,23 +259,28 @@ export function Sanctuary3DVisualizer({
 
     function afterDraw(cb: () => void) {
       if (disposed) return;
-      const gl = renderer.getContext() as WebGL2RenderingContext;
-      const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      gl.flush();
-      const poll = () => {
-        if (disposed) {
-          if (sync) gl.deleteSync(sync);
-          return;
-        }
-        const state = sync && gl.getSyncParameter(sync, gl.SYNC_STATUS);
-        if (state === gl.UNSIGNALED) {
-          frameId = window.setTimeout(poll, 5);
-        } else {
-          if (sync) gl.deleteSync(sync);
-          frameId = window.setTimeout(cb, 80);
-        }
-      };
-      frameId = window.setTimeout(poll, 5);
+      const gl = renderer.getContext();
+      if ('fenceSync' in gl && typeof (gl as WebGL2RenderingContext).fenceSync === 'function') {
+        const gl2 = gl as WebGL2RenderingContext;
+        const sync = gl2.fenceSync(gl2.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        gl2.flush();
+        const poll = () => {
+          if (disposed) {
+            if (sync) gl2.deleteSync(sync);
+            return;
+          }
+          const state = sync && gl2.getSyncParameter(sync, gl2.SYNC_STATUS);
+          if (state === gl2.UNSIGNALED) {
+            frameId = window.setTimeout(poll, 5);
+          } else {
+            if (sync) gl2.deleteSync(sync);
+            frameId = window.setTimeout(cb, 80);
+          }
+        };
+        frameId = window.setTimeout(poll, 5);
+      } else {
+        frameId = window.setTimeout(cb, 80);
+      }
     }
 
     function updateScene(dt: number) {
@@ -499,6 +504,9 @@ export function Sanctuary3DVisualizer({
       handle.dispose();
       envTarget.dispose();
       renderer.dispose();
+      if (renderer.domElement.parentNode) {
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
@@ -508,7 +516,7 @@ export function Sanctuary3DVisualizer({
 
   return (
     <section
-      aria-label="Interactive 3D Atmospheric Sanctuary and HEPA airflow visualizer"
+      aria-label="Interactive 3D AirWish Sanctuary and HEPA airflow visualizer"
       data-testid="sanctuary-3d-section"
       className="relative overflow-hidden rounded-2xl border border-[#2A364F] bg-[#070C16]"
       style={{

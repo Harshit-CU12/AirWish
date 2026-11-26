@@ -104,7 +104,15 @@ export function getRoomIndoorAqi(room: Pick<RoomMonitor, 'indoorPm25'>): number 
 }
 
 export function calculateProtectionPercent(outdoorAqi: number, indoorAqi: number): number {
-  if (outdoorAqi <= 0) return 0;
+  if (
+    typeof outdoorAqi !== 'number' ||
+    typeof indoorAqi !== 'number' ||
+    Number.isNaN(outdoorAqi) ||
+    Number.isNaN(indoorAqi) ||
+    outdoorAqi <= 0
+  ) {
+    return 0;
+  }
   const reduction = ((outdoorAqi - indoorAqi) / outdoorAqi) * 100;
   return Math.max(0, Math.min(99, Math.round(reduction)));
 }

@@ -50,9 +50,26 @@ test('Open windows with purifier off infiltrates outdoor smog rapidly', () => {
   assert.equal(estimateMinutesToTargetPm25(dirtyOpenRoom, 290, 25), null);
 });
 
-test('Protection percentage clamps between 0 and 99', () => {
+test('Protection percentage clamps between 0 and 99 and handles edge cases', () => {
   assert.equal(calculateProtectionPercent(438, 26), 94);
   assert.equal(calculateProtectionPercent(50, 65), 0);
+  assert.equal(calculateProtectionPercent(0, 50), 0);
+  assert.equal(calculateProtectionPercent(NaN, 50), 0);
+  assert.equal(calculateProtectionPercent(100, NaN), 0);
+});
+
+test('findBestVentilationWindow handles empty and single-element forecast gracefully', () => {
+  const emptyResult = findBestVentilationWindow([]);
+  assert.equal(emptyResult.startHour, '14:00');
+  assert.equal(emptyResult.isSafeToOpen, true);
+
+  const singlePoint = findBestVentilationWindow([
+    { hourLabel: '08:00', hourOffset: 0, outdoorAqi: 50, outdoorPm25: 15, windKmh: 10, tempC: 20 },
+  ]);
+  assert.equal(singlePoint.startHour, '08:00');
+  assert.equal(singlePoint.endHour, '08:00');
+  assert.equal(singlePoint.avgAqi, 50);
+  assert.equal(singlePoint.isSafeToOpen, true);
 });
 
 test('findBestVentilationWindow identifies lowest 3-hour AQI trough', () => {
