@@ -25,6 +25,46 @@ test('calculatePollutantSubIndex handles invalid and edge-case inputs gracefully
   assert.equal(calculatePollutantSubIndex('pm25', 1000), 600);
 });
 
+test('calculatePollutantSubIndex covers all criteria pollutants and thresholds', () => {
+  // PM10 (0-50: 0-50, 51-100: 51-100, 101-250: 101-200, 251-350: 201-300, 351-430: 301-400, 431+: 401-500)
+  assert.equal(calculatePollutantSubIndex('pm10', 0), 0);
+  assert.equal(calculatePollutantSubIndex('pm10', 50), 50);
+  assert.equal(calculatePollutantSubIndex('pm10', 100), 100);
+  assert.equal(calculatePollutantSubIndex('pm10', 250), 200);
+  assert.equal(calculatePollutantSubIndex('pm10', 350), 300);
+  assert.equal(calculatePollutantSubIndex('pm10', 430), 400);
+
+  // NO2
+  assert.equal(calculatePollutantSubIndex('no2', 40), 50);
+  assert.equal(calculatePollutantSubIndex('no2', 80), 100);
+
+  // SO2
+  assert.equal(calculatePollutantSubIndex('so2', 40), 50);
+  assert.equal(calculatePollutantSubIndex('so2', 80), 100);
+
+  // CO (in mg/m3)
+  assert.equal(calculatePollutantSubIndex('co', 1.0), 50);
+  assert.equal(calculatePollutantSubIndex('co', 2.0), 100);
+
+  // O3
+  assert.equal(calculatePollutantSubIndex('o3', 50), 50);
+  assert.equal(calculatePollutantSubIndex('o3', 100), 100);
+});
+
+test('evaluateStationAqi selects PM10 when PM10 sub-index dominates', () => {
+  const result = evaluateStationAqi({
+    pm25: 15, // Low
+    pm10: 450, // High dust / construction storm
+    no2: 20,
+    so2: 10,
+    co: 0.5,
+    o3: 30,
+  });
+  assert.equal(result.prominentPollutant, 'pm10');
+  assert.equal(result.category.key, 'severe');
+  assert.ok(result.aqi >= 400);
+});
+
 test('CPCB category mapping returns exact semantic tiers', () => {
   assert.equal(getCpcbCategory(35).key, 'good');
   assert.equal(getCpcbCategory(88).key, 'satisfactory');

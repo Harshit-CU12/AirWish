@@ -1,12 +1,12 @@
 import type { MonitoringStation, WeatherConditions } from '../types/sentinel';
 
-function degreesToCompass(deg: number): string {
+export function degreesToCompass(deg: number): string {
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const idx = Math.round(deg / 22.5) % 16;
   return directions[idx];
 }
 
-function computeInversionRisk(tempC: number, windKmh: number, humidityPct: number): 'Low' | 'Moderate' | 'High' | 'Severe' {
+export function computeInversionRisk(tempC: number, windKmh: number, humidityPct: number): 'Low' | 'Moderate' | 'High' | 'Severe' {
   // Stagnant cold moist air produces severe radiation inversion in urban winter
   if (windKmh < 5 && tempC < 16 && humidityPct > 70) return 'Severe';
   if (windKmh < 8 && tempC < 20) return 'High';

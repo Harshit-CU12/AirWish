@@ -4,6 +4,9 @@ import {
   calculateProtectionPercent,
   estimateMinutesToTargetPm25,
   findBestVentilationWindow,
+  getEffectiveCadrM3h,
+  getRoomVolumeM3,
+  getSteadyStatePm25,
   stepRoomPm25,
 } from './filtration';
 import type { ForecastPoint, RoomMonitor } from '../types/sentinel';
@@ -48,6 +51,22 @@ test('Open windows with purifier off infiltrates outdoor smog rapidly', () => {
 
   const dirtyOpenRoom: RoomMonitor = { ...openRoom, indoorPm25: 120 };
   assert.equal(estimateMinutesToTargetPm25(dirtyOpenRoom, 290, 25), null);
+});
+
+test('getSteadyStatePm25 calculates expected equilibrium concentration', () => {
+  const steadySealed = getSteadyStatePm25(sampleRoom, 200);
+  // Sealed room with Turbo CADR should reach steady state below 15 ug/m3
+  assert.ok(steadySealed < 15, `Expected steady PM2.5 < 15, got ${steadySealed}`);
+
+  const unsealedRoom: RoomMonitor = { ...sampleRoom, windowsSealed: false };
+  const steadyUnsealed = getSteadyStatePm25(unsealedRoom, 200);
+  assert.ok(steadyUnsealed > steadySealed, 'Unsealed room must have higher steady PM2.5');
+
+  const vol = getRoomVolumeM3(sampleRoom);
+  assert.equal(vol, 28 * 3.0);
+
+  const cadr = getEffectiveCadrM3h(sampleRoom);
+  assert.ok(cadr > 0);
 });
 
 test('Protection percentage clamps between 0 and 99 and handles edge cases', () => {

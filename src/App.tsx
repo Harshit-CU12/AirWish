@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { FamilyCarePanel } from './components/FamilyCarePanel';
 import { ForecastChart } from './components/ForecastChart';
 import { HeroTelemetry } from './components/HeroTelemetry';
@@ -376,6 +377,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#090D16] text-[#F8FAFC]">
+      {/* Accessibility Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-[#06B6D4] focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#090D16] focus:shadow-lg focus:ring-2 focus:ring-white focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
+      {/* Screen Reader Live Telemetry Announcement */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Current station: {activeStation.name}, Outdoor CPCB AQI: {outdoorAssessment.aqi}, {outdoorAssessment.category.label}.
+        {safeModeActive ? 'Sanctuary Lockdown active.' : ''}
+      </div>
+
       <TopBar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
@@ -385,7 +400,11 @@ export default function App() {
         onExportReport={handleExportReport}
       />
 
-      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8 focus:outline-none"
+      >
         <StationToolbar
           stations={MONITORING_STATIONS}
           selectedStation={activeStation}
@@ -412,18 +431,20 @@ export default function App() {
               onOpenRoomsView={() => setActiveTab('rooms')}
             />
 
-            <Suspense fallback={<VisualizerSkeleton />}>
-              <Sanctuary3DVisualizer
-                stationName={`${activeStation.name}, ${activeStation.city}`}
-                outdoorAqi={outdoorAssessment.aqi}
-                rooms={rooms}
-                selectedRoomId={selectedRoomId}
-                onSelectRoom={setSelectedRoomId}
-                safeModeActive={safeModeActive}
-                onToggleSafeMode={handleToggleSafeMode}
-                onExpandView={() => setActiveTab('spatial')}
-              />
-            </Suspense>
+            <ErrorBoundary fallbackTitle="3D Airflow Visualizer Intercepted">
+              <Suspense fallback={<VisualizerSkeleton />}>
+                <Sanctuary3DVisualizer
+                  stationName={`${activeStation.name}, ${activeStation.city}`}
+                  outdoorAqi={outdoorAssessment.aqi}
+                  rooms={rooms}
+                  selectedRoomId={selectedRoomId}
+                  onSelectRoom={setSelectedRoomId}
+                  safeModeActive={safeModeActive}
+                  onToggleSafeMode={handleToggleSafeMode}
+                  onExpandView={() => setActiveTab('spatial')}
+                />
+              </Suspense>
+            </ErrorBoundary>
 
             <PollutantGrid
               readings={activeStation.pollutants}

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { FamilyMember, MonitoringStation, RoomMonitor } from '../types/sentinel';
 import type { AqiAssessment } from '../utils/aqi';
+import { sanitizeAdvisorQuery } from '../utils/sanitization';
 import {
   askGeminiAdvisor,
   getStoredGeminiKey,
@@ -71,7 +72,8 @@ export function AiAdvisorModal({
   if (!isOpen) return null;
 
   async function handleGenerate(customQuery?: string) {
-    const q = customQuery !== undefined ? customQuery : query;
+    const rawQuery = customQuery !== undefined ? customQuery : query;
+    const q = sanitizeAdvisorQuery(rawQuery);
     const keyToUse = apiKey.trim() || getStoredGeminiKey();
 
     if (!keyToUse) {
@@ -258,6 +260,8 @@ export function AiAdvisorModal({
           >
             <input
               type="text"
+              maxLength={400}
+              aria-label="Inquiry question for AI Advisor"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask a question about smog safety, inhaler timing, school..."

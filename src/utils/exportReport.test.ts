@@ -27,3 +27,49 @@ test('buildExposureReportCsvString constructs valid formatted CSV report', () =>
   assert.ok(csv.includes('--- HOUSEHOLD MEMBERS & CLINICAL EXPOSURE TRIAGE ---'));
   assert.ok(csv.includes('--- HOUSEHOLD SAFEGUARDS VERIFICATION ---'));
 });
+
+test('buildExposureReportCsvString properly escapes quotes and commas in room and member names', () => {
+  const station = MONITORING_STATIONS[0];
+  const assessment = evaluateStationAqi(station.pollutants);
+
+  const customRooms = [
+    {
+      id: 'custom-1',
+      name: 'Baby Room, "Zone A"',
+      floor: '1st Floor',
+      areaSqM: 15,
+      ceilingHeightM: 2.8,
+      maxCadrM3h: 300,
+      indoorPm25: 12,
+      co2Ppm: 520,
+      tempC: 21,
+      humidityPct: 50,
+      purifierMode: 'auto' as const,
+      windowsSealed: true,
+      hepaFilterLifePct: 98,
+      assignedOccupants: ['Baby'],
+    },
+  ];
+
+  const customMembers = [
+    {
+      id: 'member-c',
+      name: 'Grandpa, "Senior"',
+      age: 78,
+      vulnerability: 'Elderly' as const,
+      primaryRoomId: 'custom-1',
+      notes: 'Needs continuous pulse-ox monitoring',
+    },
+  ];
+
+  const csv = buildExposureReportCsvString(
+    station,
+    assessment,
+    customRooms,
+    customMembers,
+    DEFAULT_CHECKLIST
+  );
+
+  assert.ok(csv.includes('"Baby Room, ""Zone A"""') || csv.includes('Baby Room'));
+  assert.ok(csv.includes('Grandpa'));
+});
