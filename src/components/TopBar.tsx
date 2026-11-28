@@ -67,6 +67,7 @@ export function TopBar({
           {/* Zone 2: Clean single-line text navigation links */}
           <nav
             aria-label="Primary navigation"
+            role="tablist"
             className="hidden md:flex items-center gap-7"
           >
             {NAV_ITEMS.map((item) => {
@@ -74,9 +75,13 @@ export function TopBar({
               return (
                 <button
                   key={item.id}
+                  id={`tab-${item.id}`}
+                  role="tab"
                   type="button"
                   onClick={() => onSelectTab(item.id)}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-selected={isActive}
+                  aria-controls={`view-${item.id}`}
+                  tabIndex={isActive ? 0 : -1}
                   className={`relative py-2 text-sm font-medium transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] rounded-sm ${
                     isActive
                       ? 'text-[#F8FAFC]'
@@ -148,6 +153,7 @@ export function TopBar({
         {/* Mobile navigation row — kept compact to stay well under 15% mobile sticky cap */}
         <nav
           aria-label="Mobile navigation"
+          role="tablist"
           className="flex md:hidden items-center justify-between gap-1 border-t border-[#1A2438] py-1.5 overflow-x-auto"
         >
           {NAV_ITEMS.map((item) => {
@@ -155,9 +161,13 @@ export function TopBar({
             return (
               <button
                 key={item.id}
+                id={`mobile-tab-${item.id}`}
+                role="tab"
                 type="button"
                 onClick={() => onSelectTab(item.id)}
-                aria-current={isActive ? 'page' : undefined}
+                aria-selected={isActive}
+                aria-controls={`view-${item.id}`}
+                tabIndex={isActive ? 0 : -1}
                 className={`flex-1 rounded-md px-2.5 py-2 text-xs font-medium text-center transition-colors whitespace-nowrap shrink-0 min-h-[36px] ${
                   isActive
                     ? 'bg-[#131B2E] text-[#F8FAFC] border border-[#2A364F]'
